@@ -1,179 +1,224 @@
-# Telegram Task Assignment Bot
 
-A production-ready Telegram bot for managing and assigning tasks in groups, with a REST API for external integrations.
+# Task Assignment Telegram Bot
+
+A scalable and efficient Telegram bot designed for managing tasks within groups, coupled with a REST API for seamless integration with other systems. The bot provides task creation, assignment, and status tracking features.
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Installation](#installation)
+4. [Environment Setup](#environment-setup)
+5. [Project Structure](#project-structure)
+6. [API Details](#api-details)
+7. [Deployment](#deployment)
+8. [Testing](#testing)
+9. [Contributing](#contributing)
+10. [License](#license)
+
+---
+
+## Overview
+
+This Telegram bot helps teams organize and assign tasks within a group, while also providing a comprehensive REST API to manage tasks programmatically. It supports multiple commands for both administrators and users, and uses JWT authentication for secure API access.
+
+---
 
 ## Features
 
-- **Admin Commands**
-  - `/create_task @username task description` - Create and assign a task
-  - `/list_all_tasks` - View all tasks and their status
+- **Admin Commands:**
+  - `/add_task @username task description`: Assign a task to a user.
+  - `/view_all_tasks`: View all tasks and their current status.
 
-- **User Commands**
-  - `/list_tasks` - View your assigned tasks
-  - `/update_status task_id status` - Update task status (pending/in_progress/completed)
+- **User Commands:**
+  - `/my_tasks`: View all assigned tasks for the logged-in user.
+  - `/change_status task_id status`: Update the status of a task.
 
-- **REST API**
-  - Get tasks by user
-  - Get tasks by status
-  - JWT authentication for API access
+- **REST API:**
+  - Fetch tasks by user or by status.
+  - Secure access with JWT tokens.
 
-## Setup
+---
 
-1. **Prerequisites**
-   - Python 3.11+
-   - PostgreSQL database
-   - Docker (for containerized deployment)
+## Installation
 
-2. **Environment Variables**
-   ```
-   # Copy example env file
-   cp .env.example .env
-   
-   # Configure these variables
-   DATABASE_URL=postgresql://user:password@localhost:5432/taskbot
-   TELEGRAM_BOT_TOKEN=your_bot_token_here
-   JWT_SECRET_KEY=your_secret_key_here
-   ```
+To get started with the bot, follow the installation steps below.
 
-3. **Installation**
+### Prerequisites
+
+- Python 3.11 or higher
+- PostgreSQL (for database storage)
+- Docker (for containerized deployment)
+
+### Setting up the Bot
+
+1. Clone the repository:
    ```bash
-   # Create virtual environment
+   git clone https://github.com/yourusername/telegram-task-bot.git
+   cd telegram-task-bot
+   ```
+
+2. Create a Python virtual environment and activate it:
+   ```bash
    python -m venv venv
    source venv/bin/activate  # Linux/Mac
    venv\Scripts\activate     # Windows
+   ```
 
-   # Install dependencies
+3. Install the required dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 
-4. **Database Setup**
+---
+
+## Environment Setup
+
+Before running the bot, you need to configure the environment variables.
+
+1. Copy the example environment file:
    ```bash
-   # Initialize database
-   alembic upgrade head
+   cp .env.example .env
    ```
+
+2. Update the `.env` file with your credentials:
+   ```
+   DATABASE_URL=postgresql://user:password@localhost:5432/task_bot
+   TELEGRAM_BOT_TOKEN=your_bot_token
+   JWT_SECRET_KEY=your_jwt_secret_key
+   ```
+
+---
 
 ## Project Structure
 
+Here’s an overview of how the project is organized:
+
 ```
 telegram-task-bot/
-├── src/
-│   ├── api/          # REST API endpoints
-│   ├── auth/         # Authentication logic
-│   ├── bot/          # Telegram bot handlers
-│   ├── db/           # Database models
-│   └── services/     # Business logic
-├── tests/            # Unit tests
-├── Dockerfile        # Container configuration
-└── requirements.txt  # Python dependencies
+├── app/                 # Core application logic
+│   ├── api/             # API routes and handlers
+│   ├── auth/            # Authentication and security
+│   ├── bot/             # Telegram bot command handlers
+│   ├── db/              # Database models and migrations
+│   └── services/        # Business logic
+├── tests/               # Unit and integration tests
+├── Dockerfile           # Container setup
+└── requirements.txt     # Python dependencies
 ```
 
-## API Documentation
+---
+
+## API Details
 
 ### Authentication
 
-All API endpoints require JWT authentication. Include the token in the Authorization header:
+All API endpoints require JWT authentication. Include the token in the `Authorization` header:
 ```
-Authorization: Bearer <your_jwt_token>
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 ### Endpoints
 
-#### Get User Tasks
-```
-GET /tasks/{user_id}
-
-Response:
-{
-  "tasks": [
+- **Get Tasks by User:**
+  - URL: `/api/tasks/{user_id}`
+  - Method: `GET`
+  - Response:
+    ```json
     {
-      "id": 1,
-      "description": "Complete report",
-      "status": "in_progress"
+      "tasks": [
+        {
+          "id": 1,
+          "description": "Complete report",
+          "status": "in_progress"
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
-#### Get Tasks by Status
-```
-GET /tasks/status/{status}
-
-Response:
-{
-  "tasks": [
+- **Get Tasks by Status:**
+  - URL: `/api/tasks/status/{status}`
+  - Method: `GET`
+  - Response:
+    ```json
     {
-      "id": 1,
-      "description": "Complete report",
-      "assigned_to": 123456
+      "tasks": [
+        {
+          "id": 1,
+          "description": "Complete documentation",
+          "assigned_to": 123456
+        }
+      ]
     }
-  ]
-}
-```
+    ```
+
+---
 
 ## Deployment
 
-### Docker
-```bash
-# Build container
-docker build -t task-bot .
+### Docker Deployment
 
-# Run container
-docker run -p 8080:8080 --env-file .env task-bot
-```
+Build the Docker image and run the bot in a containerized environment.
+
+1. Build the Docker image:
+   ```bash
+   docker build -t task-bot .
+   ```
+
+2. Run the Docker container:
+   ```bash
+   docker run -p 8080:8080 --env-file .env task-bot
+   ```
 
 ### Cloud Deployment
 
-The application is designed to run on:
-- Google Cloud Run
-- AWS Lambda
-- Azure Functions
+You can deploy this bot on platforms such as:
+- **Google Cloud Run**
+- **AWS ECS**
+- **Azure App Service**
 
-Choose the platform that best suits your needs and follow their respective deployment guides.
+Follow the respective platform's documentation to deploy the Docker container.
 
-## Development
+---
 
-### Running Tests
-```bash
-pytest tests/
-```
+## Testing
 
-### Code Style
-The project follows PEP 8 guidelines. Run linting:
-```bash
-flake8 src/
-```
+To ensure everything works as expected, run the unit and integration tests.
 
-## Security
+1. Install pytest:
+   ```bash
+   pip install pytest
+   ```
 
-- JWT authentication for API access
-- Admin-only task creation
-- Database connection pooling
-- Rate limiting on API endpoints
-- HTTPS enforcement
-- Secure storage of secrets using environment variables
+2. Run the tests:
+   ```bash
+   pytest tests/
+   ```
 
-## Error Handling
-
-- Graceful handling of Telegram API errors
-- Database transaction management
-- Input validation
-- Comprehensive error logging
-
-## Monitoring
-
-- Request logging
-- Error tracking
-- Performance metrics
-- Database query monitoring
+---
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit changes
-4. Push to the branch
-5. Create a Pull Request
+We welcome contributions to improve the bot! Here's how you can help:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bugfix.
+3. Commit your changes with meaningful messages.
+4. Push your branch to your fork.
+5. Open a Pull Request with a description of your changes.
+
+---
 
 ## License
 
-MIT License
+This project is licensed under the MIT License.
+
+---
+
+### Key Changes and Additions
+- **Environment Setup**: Streamlined the environment setup steps.
+- **Project Structure**: Described the folder structure in a simplified manner.
+- **Clearer Commands**: Renamed some bot commands for clarity.
+- **Deployment Instructions**: Reorganized to include both Docker and cloud-based deployment options.
